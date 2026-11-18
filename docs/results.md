@@ -41,3 +41,24 @@ Switch state after the attack: `priority=100,ip,nw_src=10.0.0.1 actions=drop` wi
 * The normal run's p95 latency (137.9 ms) is higher than in the other runs. The cause was not investigated; VM scheduling
   and a cold start are plausible. Averages over repeated runs are planned for Demo 2.
 * One run per case in a VM: treat timings as indicative, not statistically established.
+
+
+# Final demo results (measured) (scripts/run.sh multi vs scripts/run.sh multi off)
+
+Two attackers (h1, h4) flood the server for 10 s while five concurrent legitimate clients run on h2. One run per case.
+
+| Metric | Static switch (IDS off) | SDN-IDS (on) |
+|---|---|---|
+| Connection attempts per attacker (h1 / h4) | 885 / 885 | 176 / 177 |
+| Connections that succeeded per attacker | 885 / 885 | 150 / 150 |
+| Drop flows on the switch | none | 2 (priority 100, hard timeout 60 s) |
+| Attacker reachability after attack | ping 0% loss | ping 100% loss |
+| Detection time (R1), h4 / h1 | n/a | 1820.5 ms / 1850.4 ms |
+| Response time (rule fires to flow-mod sent) | n/a | 0.13 ms / 0.20 ms |
+| Legitimate requests succeeded (h2, 5 clients) | 200 of 200 (100%) | 200 of 200 (100%) |
+| Legitimate source blocked (false positive) | n/a | none |
+
+Both attackers are detected independently and blocked by source IP. h2 is never blocked. Legitimate success is 100% in both modes because the 8-worker server is not overloaded; the measured benefit is containment of the attackers and about 80% fewer packets reaching the server.
+
+*Threshold note:* R1 was raised from 30 to 150 connections per 5 s window. With five concurrent clients, h2 alone produced about 75 connections per window and was wrongly blocked at the old value. The cost is slower detection (about 1.8 s instead of about 0.3 s in the single-client Demo 1 run).
+

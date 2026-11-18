@@ -1,4 +1,4 @@
 [server] listening on 5000 with 8 workers
-[server] served=51 (+51) queue=0
-[server] served=117 (+66) queue=0
-[server] served=182 (+65) queue=0
+[server] served=52 (+52) queue=0
+[server] served=126 (+74) queue=0
+[server] served=195 (+69) queue=0

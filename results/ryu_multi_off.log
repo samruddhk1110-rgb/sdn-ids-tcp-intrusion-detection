@@ -1,5 +1,5 @@
 loading app controller/ids.py
 loading app ryu.controller.ofp_handler
 instantiating app controller/ids.py of IDS
-IDS started: mode=off window=5.0s R1>30 conns R2>10 ports block=60s
+IDS started: mode=off window=5.0s R1>150 conns R2>10 ports block=60s
 instantiating app ryu.controller.ofp_handler of OFPHandler
