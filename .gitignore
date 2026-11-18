@@ -4,3 +4,4 @@ __pycache__/
 ryuenv/
 *.swp
 .DS_Store
+results/archive/
