@@ -8,7 +8,7 @@ The controller observes new TCP connections, applies sliding-window detection ru
 **dynamically installs drop rules on the switch** to block abusive sources. Detection and response
 times are measured and compared with a static switch (IDS off).
 
-> Author: `<your name, SRN>`  |  Course: `<course / section>`  |  Demo 1 scope: detection rules R1-R3, blocking, baseline comparison
+> Author: Samruddh, PES1UG25CS458  |  Course: Computer Networks (UE25CS243A), Section H, CSE  |  Scope: detection rules R1-R3, dynamic blocking, multi-client and two-attacker scenarios, static baseline comparison
 
 ## Features
 
