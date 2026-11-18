@@ -1,0 +1,8 @@
+loading app controller/ids.py
+loading app ryu.controller.ofp_handler
+instantiating app controller/ids.py of IDS
+IDS started: mode=on window=5.0s R1>30 conns R2>10 ports block=60s
+instantiating app ryu.controller.ofp_handler of OFPHandler
+BLOCKED 10.0.0.2 by R3_SHORT_FLOWS | detection 0.0 ms | response 0.65 ms
+UNBLOCKED 10.0.0.2
+BLOCKED 10.0.0.2 by R1_HIGH_CONN_RATE | detection 1915.5 ms | response 0.22 ms

@@ -1,21 +1,31 @@
 #!/usr/bin/env python3
-"""Legitimate client. Usage: app_client.py <server_ip> <num_requests> <gap_seconds>
-One new TCP connection per request. Prints CSV lines:  start_time,latency_ms,success"""
-import socket
-import sys
-import time
+"""Concurrent legitimate TCP load client.
+Usage: app_client.py <server_ip> <requests_per_client> <gap_seconds> [--clients N]
+CSV output: timestamp,latency_ms,success,client_id
+"""
+import argparse, socket, threading, time, csv, sys
 
-ip, n, gap = sys.argv[1], int(sys.argv[2]), float(sys.argv[3])
-for i in range(n):
-    t0 = time.time()
-    ok = False
-    try:
-        s = socket.create_connection((ip, 5000), timeout=1)
-        s.sendall(('GET %d\n' % i).encode())
-        ok = s.recv(256).startswith(b'OK')
-        s.sendall(b'BYE\n')
-        s.close()
-    except OSError:
-        pass
-    print('%.6f,%.1f,%d' % (t0, (time.time() - t0) * 1000, int(ok)), flush=True)
-    time.sleep(gap)
+p = argparse.ArgumentParser()
+p.add_argument('server_ip'); p.add_argument('requests', type=int); p.add_argument('gap', type=float)
+p.add_argument('--clients', type=int, default=1, help='simultaneous independent TCP clients')
+p.add_argument('--port', type=int, default=5000)
+a = p.parse_args()
+write_lock = threading.Lock()
+
+def run(cid):
+    for i in range(a.requests):
+        start = time.time(); ok = 0
+        try:
+            with socket.create_connection((a.server_ip, a.port), timeout=2) as s:
+                s.settimeout(2); s.sendall(('GET %d\n' % i).encode())
+                ok = int(s.recv(256).startswith(b'OK'))
+                s.sendall(b'BYE\n')
+        except OSError:
+            pass
+        with write_lock:
+            print('%.6f,%.2f,%d,%s' % (start, (time.time()-start)*1000, ok, cid), flush=True)
+        time.sleep(a.gap)
+
+threads = [threading.Thread(target=run, args=(i+1,)) for i in range(a.clients)]
+for t in threads: t.start()
+for t in threads: t.join()

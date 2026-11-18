@@ -26,7 +26,7 @@ from ryu.ofproto import ofproto_v1_3
 MODE = os.environ.get('IDS_MODE', 'on')              # 'on' = IDS active, 'off' = static baseline
 SERVER_IP = os.environ.get('SERVER_IP', '10.0.0.3')  # protected TCP server
 WINDOW = float(os.environ.get('WINDOW', 5))          # sliding window length (s)
-RATE_LIMIT = int(os.environ.get('RATE_LIMIT', 30))   # R1: max new connections / window / source
+RATE_LIMIT = int(os.environ.get('RATE_LIMIT', 150))   # R1: max new connections / window / source
 PORT_LIMIT = int(os.environ.get('PORT_LIMIT', 10))   # R2: max distinct dst ports / window / source
 SHORT_FLOWS = int(os.environ.get('SHORT_FLOWS', 15)) # R3: max tiny flows seen in one stats poll
 BLOCK_TIME = int(os.environ.get('BLOCK_TIME', 60))   # how long a source stays blocked (s)

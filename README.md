@@ -66,7 +66,7 @@ scripts/run.sh flood off
 
 `scripts/run.sh` does the steps in the required order: `mn -c`, start Ryu, wait for port 6653, run the demo, stop Ryu.
 Set `RYU_VENV` if your virtualenv is not at `~/ryuenv`.
-Output files are written to `results/` (`detections.csv`, `flowstats.csv`, client/attack logs, `ryu_*.log`).
+Output files are written to `results/` (`detections.csv`, `flowstats.csv`, client/attack logs, `ryu_*.log`). Each run archives previous CSV/logs under `results/archive/`. The runner also creates `results/dashboard.html`, an offline dashboard with KPI cards, charts and detailed tables.
 
 ## Manual run (two terminals)
 
@@ -81,7 +81,7 @@ source ~/ryuenv/bin/activate && cd sdn-ids
 ryu-manager --ofp-tcp-listen-port 6653 controller/ids.py
 
 # Terminal B, after Ryu prints "instantiating app"
-sudo python3 topology/topo.py --demo scan        # normal | scan | flood
+sudo python3 topology/topo.py --demo multi       # normal | scan | flood | multi
 sudo python3 topology/topo.py                    # or an interactive Mininet CLI
 ```
 
@@ -95,6 +95,12 @@ mininet> h1 python3 app/attack.py scan 10.0.0.3 --duration 10
 mininet> sh ovs-ofctl -O OpenFlow13 dump-flows s1
 mininet> h1 ping -c 2 10.0.0.3                    # fails while h1 is blocked
 ```
+
+## Final demo workflow
+
+Run `scripts/run.sh multi` to demonstrate the full four-host scenario: h2 runs five simultaneous legitimate TCP clients; h1 and h4 launch concurrent controlled connection-rate tests; the Ryu controller detects each source independently and installs source-specific priority-100 drop rules. The server itself uses a bounded worker queue and multiple worker threads. Open `results/dashboard.html` after the run for an offline visual report of request success/latency, attacker attempts, IDS detections, response timing and OpenFlow flow-stat samples.
+
+Other focused runs: `scripts/run.sh normal`, `scripts/run.sh scan`, and `scripts/run.sh flood`. Use `scripts/run.sh multi off` for the static baseline comparison.
 
 ## Results (measured on the VM, one run per case)
 
@@ -110,7 +116,7 @@ mininet> h1 ping -c 2 10.0.0.3                    # fails while h1 is blocked
 | False positives (normal run) | n/a | 0 |
 
 The attacks used here do not overload the server, so the legitimate client succeeds in both modes. The benefit shown
-is containment of the attacker and far fewer packets reaching the server. Server-overload scenarios are planned for Demo 2.
+is containment of the attacker and far fewer packets reaching the server. The final demo adds concurrent legitimate clients and a two-attacker scenario; the bounded server queue and worker pool expose the multi-client behavior.
 Full table, interpretation and caveats: [docs/results.md](docs/results.md). Test cases: [docs/test_cases.md](docs/test_cases.md).
 
 ## Repository structure
@@ -122,7 +128,8 @@ app/app_client.py        legitimate client (logs latency and success)
 app/attack.py            controlled scan / flood generator (lab use only)
 topology/topo.py         Mininet topology and automated demo (--demo normal|scan|flood)
 scripts/run.sh           one-command runner in the correct order
-scripts/summarize.py     computes the metrics from the logs
+scripts/summarize.py     computes text metrics from the logs
+scripts/dashboard.py     builds the offline HTML dashboard with charts and tables
 docs/                    design, setup, results, test cases, viva notes, screenshots
 results/                 CSV and log output from runs
 requirements.txt         Python packages for the controller virtualenv
@@ -151,8 +158,8 @@ requirements.txt         Python packages for the controller virtualenv
 
 * Threshold rules only, no learning; thresholds chosen from the measured normal-client rate (see design notes)
 * Single switch; spoofed source IPs would block the wrong address; the controller sees the first packet of each connection only
-* Demo 2: application-to-controller UDP alerts (malformed requests, idle timeouts, overload), slow-connection attack,
-  two simultaneous attackers, bursty legitimate client (false-positive trade-off), more runs per scenario with graphs
+* Future work: application-to-controller UDP alerts (malformed requests, idle timeouts, overload), slow-connection attack,
+  bursty legitimate client (false-positive trade-off), repeated runs and confidence intervals
 
 ## Ethical use
 
